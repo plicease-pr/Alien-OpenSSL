@@ -1,4 +1,5 @@
 use alienfile;
+use Config;
 
 plugin 'PkgConfig' => (
   pkg_name => 'openssl',
@@ -6,8 +7,9 @@ plugin 'PkgConfig' => (
  
 share {
 
-  meta->{destdir} = 1;
-
+  meta->prop->{destdir} = 1;
+  meta->prop->{env}->{CC} = $Config{cc};
+  
   # when building OpenSSL from source we have a few challenges.
   # - AB uses Net::SSLeay (via HTTP::Tiny) by default when downloading https URLs
   # - Net::SSLeay requires OpenSSL
@@ -49,9 +51,9 @@ share {
   plugin 'Extract' => 'tar.gz';
 
   build [
-    '%{perl} Configure --prefix=%{.install.prefix} no-shared no-deprecated pic',
+    '%{perl} Configure --prefix=%{.install.prefix} shared no-deprecated cc',
     '%{make}',
-    '%{make} install',
+    '%{make} DESTDIR=%{env.DESTDIR} install',
   ];
 
 };
