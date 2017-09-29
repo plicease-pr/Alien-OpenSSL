@@ -51,9 +51,11 @@ share {
   plugin 'Extract' => 'tar.gz';
 
   build [
-    '%{perl} Configure --prefix=%{.install.prefix} shared no-deprecated cc',
+    './config --prefix=%{.install.prefix} shared no-deprecated',
     '%{make}',
     '%{make} DESTDIR=%{env.DESTDIR} install',
   ];
+  
+  plugin 'Gather::IsolateDynamic';
 
 };
