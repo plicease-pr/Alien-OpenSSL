@@ -20,12 +20,21 @@ share {
   # - try downloading with curl or wget via the 'bootstrap_ssl' option.
   # - if that doesn't work, fallback on FTP
   # - don't attempt FTP transfer if ALIEN_OPENSSL_FTP is set to 0
-  
-  start_url 'https://www.openssl.org/source/';
-  plugin Download => (
-    version       => qr/^openssl-([0-9\.]+[a-z]*)\.tar\.gz$/,
-    bootstrap_ssl => 1,
-  );
+
+  my @download_args = ( bootstrap_ssl => 1 );
+  my $download_path = "/source/";
+
+  if(my $version = meta->prop->{my_openssl_version})
+  {
+    $download_path = "/source/openssl-$version.tar.gz";
+  }
+  else
+  {
+    push @download_args, version => qr/^openssl-([0-9\.]+[a-z]*)\.tar\.gz$/;
+  }
+
+  start_url "https://www.openssl.org$download_path";
+  plugin Download => @download_args;
 
   unless(meta->has_hook('fetch'))
   {
@@ -36,7 +45,7 @@ share {
       log(" ************************************************* ");
       log(" *  WARNING downloading OpenSSL via FTP          * ");
       log(" ************************************************* ");
-      start_url 'ftp://ftp.openssl.org/source/';
+      start_url "ftp://ftp.openssl.org$download_path";
       plugin 'Fetch::NetFTP';
       plugin 'Decode::DirListing';
     }

@@ -2,8 +2,11 @@ use strict;
 use warnings;
 use ExtUtils::MakeMaker;
 use Alien::Build::MM;
+use Getopt::Long qw( GetOptions );
 
-my $abmm = Alien::Build::MM->new;
+my $version;
+GetOptions("version=s" => \$version);
+my $abmm = Alien::Build::MM->new(my_openssl_version => $version);
 
 WriteMakefile($abmm->mm_args(
 	SIGN         => 1,
