@@ -2,6 +2,9 @@ use Test2::V0;
 use Test::Alien;
 use Alien::OpenSSL;
 
+skip_all 'Test does not (yet) work on cygwin'
+  if $^O eq 'cygwin';
+
 skip_all 'Test requires dynamic libs'
   unless Alien::OpenSSL->dynamic_libs;
 
@@ -24,23 +27,3 @@ ffi_ok with_subtest {
 };
 
 done_testing;
-
-__DATA__
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
-#include <openssl/crypto.h>
-
-MODULE = TA_MODULE PACKAGE = TA_MODULE
-
-const char *
-version(klass)
-    const char *klass;
-  CODE:
-#ifdef SSLEAY_VERSION
-    RETVAL = SSLeay_version(SSLEAY_VERSION);
-#else
-    RETVAL = OpenSSL_version(OPENSSL_VERSION);
-#endif
-  OUTPUT:
-    RETVAL
