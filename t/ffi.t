@@ -2,7 +2,7 @@ use Test2::V0;
 use Test::Alien;
 use Alien::OpenSSL;
 
-skip_all 'Test does not (yet) work on cygwin'
+skip_all 'Test does not (yet) work on cygwin' # TODO
   if $^O eq 'cygwin';
 
 skip_all 'Test requires dynamic libs'
