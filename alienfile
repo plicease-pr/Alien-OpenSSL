@@ -7,8 +7,12 @@ plugin 'PkgConfig' => (
  
 share {
 
+  requires 'Test::More' => '0.96';
+  requires 'Text::Template';
+
+  meta->prop->{env}->{CC}   = $Config{cc};
+  meta->prop->{env}->{PERL} = $^X;
   meta->prop->{destdir} = 1;
-  meta->prop->{env}->{CC} = $Config{cc};
   
   # when building OpenSSL from source we have a few challenges.
   # - AB uses Net::SSLeay (via HTTP::Tiny) by default when downloading https URLs
@@ -59,11 +63,53 @@ share {
   
   plugin 'Extract' => 'tar.gz';
 
-  build [
-    './config --prefix=%{.install.prefix} shared no-deprecated',
-    '%{make}',
-    '%{make} DESTDIR=%{env.DESTDIR} install',
-  ];
+  my $system_type = meta->prop->{platform}->{system_type};
+
+  if($system_type =~ /^(unix|windows-mingw)$/)
+  {
+    build [
+      './config --prefix=%{.install.prefix} shared',
+      '%{make}',
+      '%{make} DESTDIR=%{env.DESTDIR} install',
+    ];
+  }
+  elsif($system_type eq 'windows-microsoft')
+  {
+    delete meta->prop->{destdir};
+    my $type = $Config{ptrsize} == 4 ? 'VC-WIN32' : 'VC-WIN64A';
+    requires 'Alien::nasm' => '0.19';
+    build [
+      "%{perl} Configure --prefix=%{.install.prefix} --openssldir=%{.runtime.prefix}/ssl no-shared $type",
+      '%{make}',
+      '%{make} OPENSSLDIR=%{.install.prefix}/ssl install',
+    ];
+    gather sub {
+      my($build) = @_;
+      my $prefix = $build->runtime_prop->{prefix};
+      $build->runtime_prop->{$_} = "-I$prefix/include " for qw( cflags cflags_static );
+      $build->runtime_prop->{$_} = "-LIBPATH:$prefix/lib libcrypto.lib libssl.lib " for qw( libs libs_static );
+    };
+  }
+  else
+  {
+    # Not supported by OpenSSL for building from Source code:
+    # (MSWin32 Perl) + (GCC)
+    # (Perl 5.8)
+    # That means that building from source is not possible on Strawberry currently.
+    # (Strawberry is basically MSWin32 Perl with gcc, we can sometimes work around
+    #  this (eg autoconf) with the MSYS Perl that comes with Alien::MSYS, but that
+    #  is 5.8, which is also not supported by OpenSSL.  Boo).
+    #
+    # ActiveState Perl is probably in a similar state.
+    #
+    # Happily, OpenSSL + Net::SSLeay are bundled with Strawberry, and it is relatively
+    # easy to install Net::SSLeay on ActiveState Perl.
+  
+    log("not sure how to do a share install with system_type = $system_type");
+    build sub {
+      die "unable to build";
+    };
+  }
   
   plugin 'Gather::IsolateDynamic';
 
