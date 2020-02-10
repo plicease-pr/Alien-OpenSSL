@@ -34,7 +34,7 @@ WriteMakefile($abmm->mm_args(
 		"Alien::Build" => "1.30",
 	},
 	"TEST_REQUIRES" => {
-		"Test::Alin::Diag" => "0",
+		"Test::Alien::Diag" => "0",
 	},
 ));
 
