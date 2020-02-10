@@ -16,6 +16,10 @@ perl:
 env:
   - ALIEN_INSTALL_TYPE=share
   - ALIEN_INSTALL_TYPE=system
+matrix:
+  allow_failures:
+    - perl: 5.8
+      env: ALIEN_INSTALL_TYPE=share
 before_install:
   - eval $(curl https://travis-perl.github.io/init)
   - build-perl
