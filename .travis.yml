@@ -1,5 +1,6 @@
 language: perl
 perl:
+  - "dev"
   - "5.30"
   - "5.28"
   - "5.26"
@@ -20,4 +21,5 @@ install:
   - cpanm --notest installdeps .
 script:
   - perl Makefile.PL && make manifest && perl Makefile.PL && make && make test
-  
+before_install:
+  - eval $(curl https://travis-perl.github.io/init) --auto
