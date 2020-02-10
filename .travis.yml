@@ -24,6 +24,6 @@ before_install:
   - which cpanm
 install:
   - cpanm --notest Alien::Build~1.19
-  - cpanm --notest installdeps .
+  - cpanm --notest --installdeps .
 script:
   - perl Makefile.PL && make manifest && perl Makefile.PL && make && make test
